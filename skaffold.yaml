@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/mmochan/jenkinx-quickstart:{{.VERSION}}"
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/mmochan/jenkinx-quickstart:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jenkinx-quickstart
+        chartPath: charts/jenkinx-quickstart
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/mmochan/jenkinx-quickstart"
+          image.tag: "{{.DIGEST_HEX}}"
